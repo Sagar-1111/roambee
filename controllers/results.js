@@ -1,24 +1,27 @@
-const fs = require('fs');
+const redis = require('redis');
+const client = redis.createClient();
 const amazonData = require('../request/amazon');
 const flipcartData = require('../request/flipcart');
 
 module.exports = {
 	cron(req, res, next){
-		let response = fs.readFileSync(__dirname + '/../data/data.json','utf8')
-    res.send(response);
+		client.get('roambee', function(err, reply) {
+	    reply = JSON.parse(reply);
+	    res.send(reply)
+		});
 	},
 	amazon(req, res, next){
-    amazonData(function(err, data){
-      if(data){
-        res.send(data);
-      }
-    })
+    amazonData()
+			.then(data => {
+				res.send(data);
+			})
+			.catch(err => next(err));
 	},
 	flipcart(req, res, next){
-    flipcartData(function(err, data){
-      if(data){
-        res.send(data);
-      }
-    })
+    flipcartData()
+			.then(data => {
+				res.send(data);
+			})
+			.catch(err => next(err));
 	}
 };
